@@ -1,7 +1,7 @@
 # Windows 11 on GitHub Actions
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/duo-windows/main.yml?branch=main)
-![License](https://img.shields.io/github/license/blender-baildu/duo-ubuntu)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/blender-baildu/duo-windows/windows11.yml?branch=main)
+![License](https://img.shields.io/github/license/blender-baildu/duo-windows)
 
 > Triển khai máy ảo Windows 11 trên GitHub Actions với Ngrok TCP và KVM hỗ trợ VT-x.
 
@@ -54,4 +54,4 @@ Xem thêm tại file [`LICENSE`](./LICENSE).
 
 ---
 
-> Made with ❤️ by [Blender-baildu]
+> Made with ❤️ by [blender-baildu](https://github.com/blender-baildu)
