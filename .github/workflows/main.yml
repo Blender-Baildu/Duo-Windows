@@ -1,0 +1,55 @@
+name: Duo-Max Windows Wiki
+on:
+  workflow_dispatch:
+    inputs:
+      ngrok:
+        description: 'Ngrok Auth Token (bắt buộc)'
+        required: true
+      ram:
+        description: 'Dung lượng RAM (ví dụ: 4G, 8G, 16G)'
+        required: true
+        default: '8G'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360 # Cài đặt thời gian tối đa là 6 giờ
+
+    steps:
+      - name: Chuẩn bị phần mềm cần thiết
+        run: |
+          sudo apt update -y
+          sudo apt install curl wget qemu-kvm qemu-utils cpulimit -y
+          wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz
+          tar -xf ngrok-v3-stable-linux-amd64.tgz
+          chmod +x ngrok
+          ./ngrok config add-authtoken "${{ github.event.inputs.ngrok }}"
+          nohup ./ngrok tcp --region ap 23 > ngrok.log 2>&1 &
+          
+      - name: Đang cài đặt Windows 11
+        run: |
+          sudo chmod 666 /dev/kvm
+          echo "Đang tải Windows image..."
+          wget -O /mnt/file.qcow2 "https://app.vagrantup.com/linuxusersfake/boxes/win11modrdpwf/versions/1.0/providers/qemu/amd64/vagrant.box" &>/dev/null &
+          while pgrep wget >/dev/null; do sleep 1; done
+          echo "Tải thành công!"
+          
+          echo "Mở rộng ổ đĩa lên 80GB..."
+          sudo qemu-img resize /mnt/file.qcow2 80G
+          
+          echo "Lấy địa chỉ kết nối RDP:"
+          sleep 5
+          curl --silent --show-error http://127.0.0.1:4040/api/tunnels | sed -nE 's/.*public_url":"tcp:..([^"]*).*/\1/p'
+          
+          # Giới hạn CPU và khởi động máy ảo
+          sudo cpulimit -l 75 -- sudo kvm -M q35,usb=on -device usb-tablet \
+            -cpu host -smp 2,cores=2 -m ${{ github.event.inputs.ram }} \
+            -device virtio-balloon-pci -vga qxl \
+            -net nic,netdev=n0 -netdev user,id=n0,hostfwd=tcp::23-:3389 \
+            -boot c -device virtio-serial-pci -device virtio-rng-pci -enable-kvm \
+            -drive file=/mnt/file.qcow2,if=virtio -vnc :0 -bios /usr/share/ovmf/OVMF.fd &
+          
+          # Giữ cho job luôn hoạt động trong 6 giờ
+          while true; do sleep 3600; done # mỗi 1 giờ sẽ "ping" job để giữ nó hoạt động
+
+          wait
