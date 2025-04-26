@@ -8,7 +8,7 @@ on:
       ram:
         description: 'Dung lượng RAM (ví dụ: 4G, 8G, 16G)'
         required: true
-        default: '8G'
+        default: '12G'
 
 jobs:
   build:
@@ -33,9 +33,6 @@ jobs:
           wget -O /mnt/file.qcow2 "https://app.vagrantup.com/linuxusersfake/boxes/win11modrdpwf/versions/1.0/providers/qemu/amd64/vagrant.box" &>/dev/null &
           while pgrep wget >/dev/null; do sleep 1; done
           echo "Tải thành công!"
-          
-          echo "Mở rộng ổ đĩa lên 80GB..."
-          sudo qemu-img resize /mnt/file.qcow2 80G
           
           echo "Lấy địa chỉ kết nối RDP:"
           sleep 5
